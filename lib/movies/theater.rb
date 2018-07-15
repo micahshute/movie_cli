@@ -4,12 +4,12 @@ class Theater
 
     @@all = []
 
-    attr_accessor :name, :address, :movies
+    attr_accessor :name, :address, :url
 
-    def initialize(name: ,address: nil, movies: [])
+    def initialize(name: ,address: nil, url: nil)
         @name = name
         @address = address
-        @movies = movies
+        @url = url
         self.save
     end
 
@@ -24,5 +24,9 @@ class Theater
     def add_movie(movie)
         movie.theater = self
         movie
+    end
+
+    def display_all_movies(today: true, tomorrow: true)
+        puts "#{Movie.all.select{|a| a.theater == self}}"
     end
 end
