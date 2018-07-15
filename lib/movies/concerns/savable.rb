@@ -6,7 +6,10 @@ module Movies::Savable
             self.class_variable_get("@@all")
         end
 
-        
+        def find_or_create_by_name(name)
+            item = self.all.find{ |i| i.name == name}
+            item.nil? ? self.new(name: name) : item
+        end
 
     end
 
