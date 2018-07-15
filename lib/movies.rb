@@ -1,5 +1,2 @@
-require "movies/version"
-
-module Movies
-  # Your code goes here...
-end
+require_relative './movies/version'
+require_relative './movies/cli'
