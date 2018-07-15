@@ -1,2 +1,4 @@
 require_relative './movies/version'
-require_relative './movies/cli'
+require 'bundler'
+Bundler.require
+require_all 'lib'
