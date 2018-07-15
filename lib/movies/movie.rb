@@ -55,10 +55,32 @@ class Movies::Movie
         movie_2.buy_url = "www.buyticketheresorealpromisehahaoopsimeanseriously.com"
         [movie_1, movie_2]
     end
+
+    def self.overview
+        
+    end
+
+    def self.in_theaters
+        self.all.select{|m| m.is_playing}
+    end
+
+    def self.opening
+        self.all.select{|m| !m.is_playing}
+    end
+
+    def self.create_or_update_from_data(data)
+        found = self.find_by_name(data[:name])
+        movie = found ? found : self.new
+        data.each do |k,v|
+            movie.send("#{k}=", v)
+        end
+        movie
+    end
+
     
     #note: show_time must be a hash of theater => time
     #buy_url must be a hash of theater => time => url
-    attr_accessor :name, :actors, :length, :rating, :summary, :preview_url, :show_times, :theaters, :genre, :buy_url
+    attr_accessor :name, :rating, :actors, :length, :rating, :summary, :preview_url, :show_times, :theaters, :genre, :url, :id, :is_playing, :content_rating
 
     def initialize(name: nil)
         @name = name
@@ -68,5 +90,12 @@ class Movies::Movie
         @buy_url = []
         self.save
     end
+
+    def update_data(data)
+        data.each do |k,v|
+            self.send("#{k}=", v)
+        end
+    end
+
 
 end

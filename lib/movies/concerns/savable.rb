@@ -11,6 +11,10 @@ module Movies::Savable
             item.nil? ? self.new(name: name) : item
         end
 
+        def find_by_name(name)
+            self.all.find{|i| i.name == name}
+        end
+
     end
 
     module InstanceMethods
