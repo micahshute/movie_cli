@@ -1,12 +1,12 @@
-class Theater
+class Movies::Theater
     extend Movies::Savable::ClassMethods
     include Movies::Savable::InstanceMethods
 
     @@all = []
 
-    attr_accessor :name, :address, :url, :phone, :zip_code, 
+    attr_accessor :name, :address, :url, :phone, :zip_code
 
-    def initialize(name: ,address: nil, url: nil)
+    def initialize(name: nil,address: nil, url: nil)
         @name = name
         @address = address
         @url = url
@@ -14,7 +14,7 @@ class Theater
     end
 
     def add_movie_from_data(data)
-        movie = Movie.new
+        movie = Movies::Movie.new
         data.each do |k,v|
             movie.send("#{k}=", v)
         end
@@ -27,10 +27,16 @@ class Theater
     end
 
     def display_all_movies(today: true, tomorrow: true)
-        puts "#{Movie.all.select{|a| a.theater == self}}"
+        puts "#{Movies::Movie.all.select{|a| !a.theaters[self.name].nil?}}"
     end
 
     def movies=(data)
-        Movies::Movie.create_or_update_from_name(data)
+        data.each{ |d| Movies::Movie.create_or_update_from_data(d) }   
     end 
+
+    def movies
+        Movies::Movie.all.select do |m|
+            m.theaters.has_key?(self.name)
+        end
+    end
 end

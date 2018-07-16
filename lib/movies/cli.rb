@@ -23,9 +23,9 @@ class Movies::CLI
         kill = false
         while !kill
             list_movies
+            puts "\n[OPTIONS]".colorize(:blue)
             puts "\n ==>  Select a movie by entering it's number"
-            puts "\n -->  Type 'more' for more options"
-            puts "\n -->  Type 'theaters' to view local theaters"
+            puts "\n ==>  Type 'local' to view local theaters, movies, and times"
             # puts "\n Type 'movies' to list all locally showing movies"
             # puts "\n Type 'tomorrow' to see tomorrow's movie times, and 'today' to see today's"
             puts "\n ==> Type 'exit' to kill this program\n"
@@ -33,14 +33,26 @@ class Movies::CLI
             case input
             when "exit"
                 kill = true
-            when 'local theaters'
-                puts 'To the theaters menu'
-                zip = validate_zip(gets.strip)
-                @scraper.parse_local_theater_times(zip)
-            when 'movies'
-                puts 'To movie details'
-            when 'more'
-                puts 'Showing more movie options'
+            when 'local'
+                Movies::Theater.clear
+                Movies::Movie.all.each{ |m| m.theaters = {} }
+                
+                zip = validate_zip
+                today = validate_tod_tom
+
+                begin
+                    theater_data = @scraper.parse_local_theater_times(zip, !today)
+                    theater_data.each{ |data| Movies::Theater.create_or_update_from_data(data) }
+                    @zip = zip
+                    display_local_theater_details
+                    puts "Press enter to return to main menu"
+                    gets
+                rescue 
+                    puts "\nInvalid information entered\n"
+                    sleep(2)
+                    puts "\n\n\n"
+                end
+                
             else
                 #Test for a number, if not, error
                 if input.to_i == 0
@@ -58,11 +70,33 @@ class Movies::CLI
         end
     end
 
+    def display_local_theater_details
+        theaters = Movies::Theater.all
+        theaters.each do |t|
+            puts "\n\n\n"
+            puts "-------------------------------------------------------------------------------".colorize(:blue)
+            puts "-------------------------------------------------------------------------------".colorize(:blue)
+            puts "#{t.name}  Addr: #{t.address}  Phone: #{t.phone}"
+            puts "-------------------------------------------------------------------------------".colorize(:blue)
+            puts "-------------------------------------------------------------------------------".colorize(:blue)
+            puts "\n\n"
+            movies = t.movies.each do |movie|
+                puts "#{movie.name}  "
+                puts "-------------------------------".colorize(:blue)
+                times = movie.theaters[t.name].join("   ")
+                puts "#{times}"
+                puts "\n"
+            end
+        end
+    end
+
 
     def display_movie_details(movie)
         puts "\n\n\n"
-        puts "#{movie.name} \n\n"
-        puts "Genre: ".colorize(:light_blue) + "#{movie.genre}   " + "Content Rating: ".colorize(:light_blue) + "#{movie.content_rating}   " + "Length: ".colorize(:light_blue) + "#{movie.length}"
+        puts "---------------------------".colorize(:blue)
+        puts "#{movie.name}"
+        puts "---------------------------\n\n".colorize(:blue)
+        puts "Genre: ".colorize(:light_blue) + "#{movie.genres.join("   ")}   " + "Content Rating: ".colorize(:light_blue) + "#{movie.content_rating}   " + "Length: ".colorize(:light_blue) + "#{movie.length}"
         puts "Starring: ".colorize(:light_blue) + "#{movie.actors}"
         puts "Fan Rating: ".colorize(:light_blue) + "#{movie.rating} / 5"
         puts "\n"
@@ -76,8 +110,26 @@ class Movies::CLI
     end
 
 
-    def validate_zip(zip)
-        zip
+    def validate_zip
+        puts "Enter your zip code"
+        input = gets.strip
+        if input.length == 5 && input.to_i !=0
+            input
+        else
+            validate_zip
+        end
+    end
+
+    def validate_tod_tom
+        puts "Type 'tod' or 'tom' for today or tomorrow's times"
+        input = gets.strip.downcase
+        if input == "tod"
+            true
+        elsif input == "tom"
+            false
+        else
+            validate_tod_tom
+        end
     end
 
     def populate_general_movies
@@ -101,7 +153,7 @@ class Movies::CLI
 
         puts "\n\nIN THEATERS NOW: \n".colorize(:blue)
         Movies::Movie.in_theaters.each.with_index do |m, i|
-            break if i > 15
+            break if i > 20
             print "#{i + opening_number + 1}. "
             display_general(m)
         end

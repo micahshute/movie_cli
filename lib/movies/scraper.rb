@@ -42,7 +42,7 @@ class Movies::Scraper
                 phone: theater_info["phone"],
                 zip_code: theater_info['zip'],
                 url: theater_info["theaterPageUrl"],
-                address: theater_info["address1"] + "\n" + theater_info["address2"],
+                address: theater_info["address1"],
                 movies: theater_info["movies"].map do |m| 
                     {
                         id: m["id"],
@@ -50,6 +50,7 @@ class Movies::Scraper
                         length: m['runtime'].to_s + " mins",
                         content_rating: m['rating'],
                         genres: m['genres'],
+                        is_playing: true,
                         concat_theater: {
                             theater_info["name"] => m["variants"].map do |formats_info|
                                         formats_info["amenityGroups"].map do |times_cat_hash|
@@ -64,7 +65,6 @@ class Movies::Scraper
             }
         end
         theaters
-        # theaters = doc.css('div.tsp section.row div.fd-showtimes.js-theaterShowtimes-loading li.fd-theater')
     end
 
 
@@ -90,6 +90,9 @@ class Movies::Scraper
         link_prev = link.length == 0 ? nil : link[0]['href']
         info = doc.css('section.movie-details ul.movie-details__detail')
         summary= doc.css('p.movie-synopsis__body').text
+        backup_summary_info = doc.css('meta').select{|meta| meta['name'] == 'description'}
+        backup_summary = backup_summary_info.length == 0 ? "" : backup_summary_info[0]['content']
+        summary = backup_summary if summary == ""
         rating_length = info.css('li')[2].text
         content_rating_length = parse_rating_length(rating_length)
         content_rating = content_rating_length[0]
@@ -99,7 +102,7 @@ class Movies::Scraper
         stars = get_stars(url_actors)
         movie_data = {
             summary: summary,
-            genre: genre,
+            genres: [genre],
             rating: rating,
             content_rating: content_rating,
             length: length,
