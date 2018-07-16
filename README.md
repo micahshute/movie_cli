@@ -23,7 +23,9 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+This is a simple CLI app which provides instructions while using it. The main menu will populate movies which are opening this week, and the top 20 in theaters. By typing the movie's index number, you can see details about the movie, including genre, rating, length, synopsis, and movie trailer link. 
+
+Also, you can type 'local' and provide your zip code, and your preference for today or tomorrow's movie times, and you can see movie times at all your local theaters.
 
 ## Development
 
