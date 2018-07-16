@@ -1,24 +1,10 @@
 require 'pry'
 class Movies::Scraper
 
-
-    #https://www.fandango.com/napi/theaterswithshowtimes?zipCode=29403&city=&state=&date=2018-07-15&page=1&favTheaterOnly=false&limit=10&isdesktop=true
-    #https://www.fandango.com/api/navigation/ecustheader?callback=jQuery21107108084135063473_1531699830904&location=29403&_=1531699830905
     attr_accessor :base_url, :zip_code
     def initialize(base_url: "https://www.fandango.com/", zip_code: nil)
         @base_url = base_url
         @zip_code = zip_code
-    end
-
-    def parse_local_theaters(zip_code = @zip_code, tomorrow=false)
-        date = tomorrow ? Time.now.to_date.next_day.to_s : Time.now.to_date.to_s
-        date_param = date.to_time.to_i.to_s
-        # url = "https://www.fandango.com/napi/theaterswithshowtimes?zipCode=" + zip_code + "&city=&state=" + "&date=" + date + "&page=1&favTheaterOnly=false&limit=10&isdesktop=true"
-        url = "https://www.fandango.com/api/navigation/ecustheader?callback=jQuery21107108084135063473_1531699830904&location=29403&_=" + date_param
-        response = Nokogiri::XML(HTTParty.get(url))
-        # json = JSON.parse(response)
-        puts response
-        # theaters = doc.css('div.tsp section.row div.fd-showtimes.js-theaterShowtimes-loading li.fd-theater')
     end
 
     def parse_local_theater_times(zip_code = @zip_code, tomorrow=false)
@@ -67,16 +53,6 @@ class Movies::Scraper
         theaters
     end
 
-
-    def parse_all_movies_from_theater(theater, tomorrow=false)
-    end
-
-    def parse_movie_times(zip = @zip)
-        doc = Nokogiri::HTML(HTTParty.get("https://www.fandango.com/skyscraper-2018-208910/plot-summary"))
-        times = doc.css('section.movie-showtimes')
-        puts times
-    end
-
     def parse_movie_data(movie)
         url_arr = movie.url.split("/")
         url_arr[url_arr.length - 1] = "plot-summary"
@@ -98,7 +74,7 @@ class Movies::Scraper
         content_rating = content_rating_length[0]
         length = content_rating_length[1]
         genre = info.css('li')[3].text
-        rating = info.css('div.js-fd-star-rating.fd-star-rating')[0]['data-star-rating']
+        rating = info.css('div.js-fd-star-rating.fd-star-rating')[0].nil? ? "Not found" :  info.css('div.js-fd-star-rating.fd-star-rating')[0]['data-star-rating']
         stars = get_stars(url_actors)
         movie_data = {
             summary: summary,

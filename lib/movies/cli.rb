@@ -98,7 +98,7 @@ class Movies::CLI
         puts "---------------------------\n\n".colorize(:blue)
         puts "Genre: ".colorize(:light_blue) + "#{movie.genres.join("   ")}   " + "Content Rating: ".colorize(:light_blue) + "#{movie.content_rating}   " + "Length: ".colorize(:light_blue) + "#{movie.length}"
         puts "Starring: ".colorize(:light_blue) + "#{movie.actors}"
-        puts "Fan Rating: ".colorize(:light_blue) + "#{movie.rating} / 5"
+        puts movie.rating == "Not found" ? "No ratings yet" : "Fan Rating: ".colorize(:light_blue) + "#{movie.rating} / 5" 
         puts "\n"
 
         puts movie.summary == "" ? "There is no summary for this movie" : "Summary: \n".colorize(:light_blue) + "#{movie.summary}"
@@ -143,7 +143,7 @@ class Movies::CLI
     end
 
     def list_movies
-        puts "OPENING THIS WEEK: \n".colorize(:blue)
+        puts "\n\nOPENING THIS WEEK: \n".colorize(:blue)
         opening_number = 0
         Movies::Movie.opening.each.with_index do |m, i|
             print "#{i + 1}. "
