@@ -78,13 +78,13 @@ class Movies::Movie
     end
 
     
-    #note: show_time must be a hash of theater => time
+    #note: theaters must be a hash of theater => [time]
     #buy_url must be a hash of theater => time => url
-    attr_accessor :name, :rating, :actors, :length, :rating, :summary, :preview_url, :show_times, :theaters, :genre, :url, :id, :is_playing, :content_rating
+    attr_accessor :name, :id, :rating, :actors, :length, :rating, :summary, :preview_url, :theaters, :genre, :url, :id, :is_playing, :content_rating
 
     def initialize(name: nil)
         @name = name
-        @theaters = []
+        @theaters = {}
         @show_times = []
         @actors = []
         @buy_url = []
@@ -94,6 +94,22 @@ class Movies::Movie
     def update_data(data)
         data.each do |k,v|
             self.send("#{k}=", v)
+        end
+    end
+
+    def concat_theater=(theater_hash)
+        theater_hash.each do |theater, times|
+            if @theaters[theater].nil?
+                formatted_times = times.map{|t| t.gsub("+", " @ ")}
+                @theaters[theater] = formatted_times
+            else
+                times.each do |t|
+                    time = t.gsub("+", " @ ")
+                    if !@theaters[theater].include?(time)
+                        @theaters[theater].push(time)
+                    end
+                end
+            end
         end
     end
 

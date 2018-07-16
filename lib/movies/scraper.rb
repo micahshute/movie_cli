@@ -3,21 +3,70 @@ class Movies::Scraper
 
 
     #https://www.fandango.com/napi/theaterswithshowtimes?zipCode=29403&city=&state=&date=2018-07-15&page=1&favTheaterOnly=false&limit=10&isdesktop=true
-
+    #https://www.fandango.com/api/navigation/ecustheader?callback=jQuery21107108084135063473_1531699830904&location=29403&_=1531699830905
     attr_accessor :base_url, :zip_code
     def initialize(base_url: "https://www.fandango.com/", zip_code: nil)
         @base_url = base_url
         @zip_code = zip_code
     end
 
-    def parse_local_theater_times(zip_code = @zip_code, tomorrow=false)
+    def parse_local_theaters(zip_code = @zip_code, tomorrow=false)
         date = tomorrow ? Time.now.to_date.next_day.to_s : Time.now.to_date.to_s
-        url = "https://www.fandango.com/napi/theaterswithshowtimes?zipCode=" + zip_code + "&city=&state=" + "&date=" + date + "&page=1&favTheaterOnly=false&limit=10&isdesktop=true"
-        response = HTTParty.get(url)
+        date_param = date.to_time.to_i.to_s
+        # url = "https://www.fandango.com/napi/theaterswithshowtimes?zipCode=" + zip_code + "&city=&state=" + "&date=" + date + "&page=1&favTheaterOnly=false&limit=10&isdesktop=true"
+        url = "https://www.fandango.com/api/navigation/ecustheader?callback=jQuery21107108084135063473_1531699830904&location=29403&_=" + date_param
+        response = Nokogiri::XML(HTTParty.get(url))
         # json = JSON.parse(response)
         puts response
         # theaters = doc.css('div.tsp section.row div.fd-showtimes.js-theaterShowtimes-loading li.fd-theater')
     end
+
+    def parse_local_theater_times(zip_code = @zip_code, tomorrow=false)
+        date = tomorrow ? Time.now.to_date.next_day.to_s : Time.now.to_date.to_s
+        get_cookie_url = "https://www.fandango.com/" + zip_code + "_movietimes?mode=general&q=" + zip_code
+        cookie_res = HTTParty.get(get_cookie_url)
+        cookie = cookie_res.headers['set-cookie']
+        headers = {
+            "cookie" => cookie,
+            "referer" => get_cookie_url,
+            "if-none-match" => 'W/"2e6f1-ev4DVJdkUntSlJ2sy3cauA"',
+            "user-agent" => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
+        }
+        url = "https://www.fandango.com/napi/theaterswithshowtimes?zipCode=" + zip_code + "&city=&state=" + "&date=" + date + "&page=1&favTheaterOnly=false&limit=10&isdesktop=true"
+        res = HTTParty.get(url, headers: headers)
+        json = JSON.parse(res.body)
+        theaters_info = json["theaters"]
+        theaters = theaters_info.map do |theater_info|
+            {
+                name: theater_info["name"],
+                phone: theater_info["phone"],
+                zip_code: theater_info['zip'],
+                url: theater_info["theaterPageUrl"],
+                address: theater_info["address1"] + "\n" + theater_info["address2"],
+                movies: theater_info["movies"].map do |m| 
+                    {
+                        id: m["id"],
+                        name: m['title'],
+                        length: m['runtime'].to_s + " mins",
+                        content_rating: m['rating'],
+                        genres: m['genres'],
+                        concat_theater: {
+                            theater_info["name"] => m["variants"].map do |formats_info|
+                                        formats_info["amenityGroups"].map do |times_cat_hash|
+                                            times_cat_hash["showtimes"].map do |times_hash|
+                                                times_hash["ticketingDate"]
+                                            end
+                                        end.flatten
+                                    end.flatten
+                        }
+                    }
+                end
+            }
+        end
+        theaters
+        # theaters = doc.css('div.tsp section.row div.fd-showtimes.js-theaterShowtimes-loading li.fd-theater')
+    end
+
 
     def parse_all_movies_from_theater(theater, tomorrow=false)
     end

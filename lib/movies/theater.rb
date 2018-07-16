@@ -4,7 +4,7 @@ class Theater
 
     @@all = []
 
-    attr_accessor :name, :address, :url
+    attr_accessor :name, :address, :url, :phone, :zip_code, 
 
     def initialize(name: ,address: nil, url: nil)
         @name = name
@@ -29,4 +29,8 @@ class Theater
     def display_all_movies(today: true, tomorrow: true)
         puts "#{Movie.all.select{|a| a.theater == self}}"
     end
+
+    def movies=(data)
+        Movies::Movie.create_or_update_from_name(data)
+    end 
 end
