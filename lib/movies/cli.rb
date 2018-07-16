@@ -33,8 +33,10 @@ class Movies::CLI
             case input
             when "exit"
                 kill = true
-            when 'theaters'
+            when 'local theaters'
                 puts 'To the theaters menu'
+                zip = validate_zip(gets.strip)
+                @scraper.parse_local_theater_times(zip)
             when 'movies'
                 puts 'To movie details'
             when 'more'

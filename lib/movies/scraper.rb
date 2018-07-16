@@ -1,26 +1,29 @@
 require 'pry'
 class Movies::Scraper
 
+
+    #https://www.fandango.com/napi/theaterswithshowtimes?zipCode=29403&city=&state=&date=2018-07-15&page=1&favTheaterOnly=false&limit=10&isdesktop=true
+
     attr_accessor :base_url, :zip_code
     def initialize(base_url: "https://www.fandango.com/", zip_code: nil)
         @base_url = base_url
         @zip_code = zip_code
     end
 
-    def parse_all_movies(zip_code = @zip_code, tomorrow=false)
+    def parse_local_theater_times(zip_code = @zip_code, tomorrow=false)
         date = tomorrow ? Time.now.to_date.next_day.to_s : Time.now.to_date.to_s
-        url = @base_url + zip_code + "_movietimes?mode=general&q=" + zip_code + "&date=" + date
-        puts url
+        url = "https://www.fandango.com/napi/theaterswithshowtimes?zipCode=" + zip_code + "&city=&state=" + "&date=" + date + "&page=1&favTheaterOnly=false&limit=10&isdesktop=true"
         response = HTTParty.get(url)
-        doc = Nokogiri::HTML(response)
-        theaters = doc.css('div.tsp section.row div.fd-showtimes.js-theaterShowtimes-loading li.fd-theater')
+        # json = JSON.parse(response)
+        puts response
+        # theaters = doc.css('div.tsp section.row div.fd-showtimes.js-theaterShowtimes-loading li.fd-theater')
     end
 
     def parse_all_movies_from_theater(theater, tomorrow=false)
     end
 
     def parse_movie_times(zip = @zip)
-        doc = Nokogiri::HTML(HTTParty.post("https://www.fandango.com/skyscraper-2018-208910/plot-summary"))
+        doc = Nokogiri::HTML(HTTParty.get("https://www.fandango.com/skyscraper-2018-208910/plot-summary"))
         times = doc.css('section.movie-showtimes')
         puts times
     end
