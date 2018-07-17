@@ -50,7 +50,7 @@ class Movies::Scraper
                 end
             }
         end
-        theaters
+        theaters.map{ |data| Movies::Theater.create_or_update_from_data(data) }
     end
 
     def parse_movie_data(movie)
@@ -125,7 +125,14 @@ class Movies::Scraper
                 is_playing: true
             }
         end
-       opening_movies.concat(now_playing_movies)
+         all = opening_movies.concat(now_playing_movies)
+         all.map do |data|
+            movie = Movies::Movie.new
+            data.each do |k,v|
+                movie.send("#{k}=",v)
+            end
+            movie
+        end
     end
 
     def parsed_url(name, bad_url)

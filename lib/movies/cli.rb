@@ -41,8 +41,7 @@ class Movies::CLI
                 today = validate_tod_tom
 
                 begin
-                    theater_data = @scraper.parse_local_theater_times(zip, !today)
-                    theater_data.each{ |data| Movies::Theater.create_or_update_from_data(data) }
+                    @scraper.parse_local_theater_times(zip, !today)
                     @zip = zip
                     display_local_theater_details
                     puts "Press enter to return to main menu"
@@ -134,12 +133,7 @@ class Movies::CLI
 
     def populate_general_movies
         movies_data = @scraper.parse_movie_overview
-        movies_data.each do |data|
-            movie = Movies::Movie.new
-            data.each do |k,v|
-                movie.send("#{k}=",v)
-            end
-        end
+        
     end
 
     def list_movies
