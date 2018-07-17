@@ -73,7 +73,7 @@ class Movies::Scraper
         content_rating_length = parse_rating_length(rating_length)
         content_rating = content_rating_length[0]
         length = content_rating_length[1]
-        genre = info.css('li')[3].text
+        genre = info.css('li')[3].text.strip
         rating = info.css('div.js-fd-star-rating.fd-star-rating')[0].nil? ? "Not found" :  info.css('div.js-fd-star-rating.fd-star-rating')[0]['data-star-rating']
         stars = get_stars(url_actors)
         movie_data = {
