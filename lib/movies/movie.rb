@@ -29,6 +29,7 @@ class Movies::Movie
         data.each do |k,v|
             self.send("#{k}=", v)
         end
+        self
     end
 
     def concat_theater=(theater_hash)

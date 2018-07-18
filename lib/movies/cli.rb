@@ -46,8 +46,9 @@ class Movies::CLI
                     display_local_theater_details
                     puts "Press enter to return to main menu"
                     gets
-                rescue 
-                    puts "\nInvalid information entered\n"
+                rescue => error
+                    puts "\nRequest failed with error #{error}\n"
+                    puts "Incorrect information entered, or it is not available at this time."
                     sleep(2)
                     puts "\n\n\n"
                 end
@@ -60,7 +61,7 @@ class Movies::CLI
                     puts "Retrieving your movie data..."
                     movie = index_to_object(input.to_i, Movies::Movie.opening, Movies::Movie.in_theaters)
                     if !movie.nil?
-                        movie.update_data(@scraper.parse_movie_data(movie))
+                        @scraper.parse_movie_data(movie)
                         display_movie_details(movie)
                     end
 

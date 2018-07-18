@@ -9,7 +9,7 @@ class Movies::Scraper
 
     def parse_local_theater_times(zip_code = @zip_code, tomorrow=false)
         date = tomorrow ? Time.now.to_date.next_day.to_s : Time.now.to_date.to_s
-        get_cookie_url = "https://www.fandango.com/" + zip_code + "_movietimes?mode=general&q=" + zip_code
+        get_cookie_url = "https://www.fandango.com/" + zip_code + "_movietimes?mode=general&q=" + zip_code + "&date=" + date
         cookie_res = HTTParty.get(get_cookie_url)
         cookie = cookie_res.headers['set-cookie']
         headers = {
@@ -22,33 +22,38 @@ class Movies::Scraper
         res = HTTParty.get(url, headers: headers)
         json = JSON.parse(res.body)
         theaters_info = json["theaters"]
+        
         theaters = theaters_info.map do |theater_info|
-            {
-                name: theater_info["name"],
-                phone: theater_info["phone"],
-                zip_code: theater_info['zip'],
-                url: theater_info["theaterPageUrl"],
-                address: theater_info["address1"],
-                movies: theater_info["movies"].map do |m| 
-                    {
-                        id: m["id"],
-                        name: m['title'],
-                        length: m['runtime'].to_s + " mins",
-                        content_rating: m['rating'],
-                        genres: m['genres'],
-                        is_playing: true,
-                        concat_theater: {
-                            theater_info["name"] => m["variants"].map do |formats_info|
-                                        formats_info["amenityGroups"].map do |times_cat_hash|
-                                            times_cat_hash["showtimes"].map do |times_hash|
-                                                times_hash["ticketingDate"]
-                                            end
+            if theater_info["hasShowtimes"]
+                {
+                    name: theater_info["name"],
+                    phone: theater_info["phone"],
+                    zip_code: theater_info['zip'],
+                    url: theater_info["theaterPageUrl"],
+                    address: theater_info["address1"],
+                    movies: theater_info["movies"].map do |m| 
+                        {
+                            id: m["id"],
+                            name: m['title'],
+                            length: m['runtime'].to_s + " mins",
+                            content_rating: m['rating'],
+                            genres: m['genres'],
+                            is_playing: true,
+                            concat_theater: {
+                                theater_info["name"] => m["variants"].map do |formats_info|
+                                            formats_info["amenityGroups"].map do |times_cat_hash|
+                                                times_cat_hash["showtimes"].map do |times_hash|
+                                                    times_hash["ticketingDate"]
+                                                end
+                                            end.flatten
                                         end.flatten
-                                    end.flatten
+                            }
                         }
-                    }
-                end
-            }
+                    end
+                }
+            else
+                {}
+            end
         end
         theaters.map{ |data| Movies::Theater.create_or_update_from_data(data) }
     end
@@ -85,7 +90,7 @@ class Movies::Scraper
             preview_url: link_prev,
             actors: stars
         }
-        movie_data
+        movie.update_data(movie_data)
     end
 
     def get_stars(url)
@@ -126,13 +131,7 @@ class Movies::Scraper
             }
         end
          all = opening_movies.concat(now_playing_movies)
-         all.map do |data|
-            movie = Movies::Movie.new
-            data.each do |k,v|
-                movie.send("#{k}=",v)
-            end
-            movie
-        end
+        all.map{ |data| Movies::Movie.create_or_update_from_data(data) }
     end
 
     def parsed_url(name, bad_url)
