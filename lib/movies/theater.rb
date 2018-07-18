@@ -21,15 +21,6 @@ class Movies::Theater
         add_movie(movie)
     end
 
-    def add_movie(movie)
-        movie.theater = self
-        movie
-    end
-
-    def display_all_movies(today: true, tomorrow: true)
-        puts "#{Movies::Movie.all.select{|a| !a.theaters[self.name].nil?}}"
-    end
-
     def movies=(data)
         data.each{ |d| Movies::Movie.create_or_update_from_data(d) }   
     end 
