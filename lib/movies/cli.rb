@@ -17,6 +17,7 @@ class Movies::CLI
         unval_zip = gets.strip
         puts "\n"
         zip = validate_zip(unval_zip)
+        #comment
     end
 
     def main_menu
