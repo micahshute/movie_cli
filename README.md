@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Movies
 
 Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/movies`. To experiment with that code, run `bin/console` for an interactive prompt.
@@ -43,4 +43,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 =======
 # movie_cli
 CLI iterface in ruby to see local movies
->>>>>>> 80c49aeb5eeff7703f7f96ff0e694afb948c83ff
+
